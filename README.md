@@ -2,6 +2,15 @@
 
 A full-stack, AI-powered mock interview platform built to help candidates prepare for technical and behavioural interviews — with live code execution, real-time proctoring, voice-based interviews, adaptive difficulty, and a searchable question bank across 30+ real companies.
 
+Frontend:
+https://ai-interview-platform-six-kohl.vercel.app
+
+Backend:
+https://ai-interview-platform-0n2e.onrender.com
+
+Render CLIENT_URL:
+https://ai-interview-platform-six-kohl.vercel.app
+
 ## ✨ Key Features
 
 - **AI-scored mock interviews** with live Monaco code editor (5 languages), real code execution via Judge0, and custom stdin input
