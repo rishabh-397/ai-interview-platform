@@ -56,8 +56,18 @@ async function startServer() {
   const app = express();
   const server = http.createServer(app);
 
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'https://ai-interview-platform-six-kohl.vercel.app',
+    'https://ai-interview-platform-furq44ygv-rishabh-397s-projects.vercel.app'
+  ];
+
   const io = new Server(server, {
-    cors: { origin: process.env.CLIENT_URL || '*', methods: ['GET', 'POST'] },
+    cors: {
+      origin: allowedOrigins,
+      methods: ['GET', 'POST'],
+      credentials: true
+    },
   });
 
   // Redis adapter: without this, a socket event emitted from the worker handling User A's
@@ -68,7 +78,17 @@ async function startServer() {
   io.adapter(createAdapter(pubClient, subClient));
 
   app.use(helmet());
-  app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
+
+  app.use(cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked origin: ${origin}`));
+      }
+    },
+    credentials: true
+  }));
   app.use(express.json({ limit: '2mb' }));
   app.use(morgan('dev'));
 
