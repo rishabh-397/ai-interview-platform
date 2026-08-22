@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import api from '../services/api';
+import StrictProctor from './StrictProctor';
 
 const isCodingCategory = (category) => category === 'DSA';
 
@@ -47,10 +48,14 @@ export default function QuestionPracticeModal({ questionId, onClose, onSolved })
       });
       setAiHelp(data.reply);
     } catch (err) {
-      setAiHelp('Could not reach the AI helper right now.');
+      setAiHelp('Could not reach the AI helper now.');
     } finally {
       setAskingHelp(false);
     }
+  };
+
+  const handleProctorViolation = (type) => {
+    console.warn('Proctor violation:', type);
   };
 
   const handleSubmit = async () => {
@@ -73,7 +78,9 @@ export default function QuestionPracticeModal({ questionId, onClose, onSolved })
   if (!question) {
     return (
       <div style={overlayStyle}>
-        <div style={modalStyle}><p>Loading question...</p></div>
+        <div style={modalStyle}>
+          <p>Loading question...</p>
+        </div>
       </div>
     );
   }
@@ -83,6 +90,7 @@ export default function QuestionPracticeModal({ questionId, onClose, onSolved })
   return (
     <div style={overlayStyle} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={{ ...modalStyle, maxWidth: coding ? 900 : 560 }}>
+        <StrictProctor enabled={true} onViolation={handleProctorViolation} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <span className="category-tag">{question.category}</span>{' '}
@@ -91,7 +99,6 @@ export default function QuestionPracticeModal({ questionId, onClose, onSolved })
           </div>
           <button onClick={onClose} style={{ background: '#333', padding: '4px 10px' }}>✕</button>
         </div>
-
         {coding ? (
           <>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginBottom: 8 }}>
@@ -120,16 +127,16 @@ export default function QuestionPracticeModal({ questionId, onClose, onSolved })
               Custom Input (stdin) — optional, feed test input to your program here
             </label>
             <textarea
-              value={customInput}
-              onChange={(e) => setCustomInput(e.target.value)}
-              rows={2}
-              placeholder="e.g. 5&#10;1 2 3 4 5"
-              style={{ width: '100%', fontFamily: 'monospace', fontSize: 13 }}
+              placeholder="Type your answer here..."
+              value={answerText}
+              onChange={(e) => setAnswerText(e.target.value)}
+              rows={6}
+              style={{ width: '100%', marginTop: 8 }}
             />
             {codeOutput && (
               <div style={{ marginTop: 8 }}>
                 <label style={{ fontSize: 12, color: '#888', display: 'block', marginBottom: 4 }}>Output</label>
-                <div style={{ background: '#0a0c10', border: '1px solid #262b36', borderRadius: 8, padding: 10, fontFamily: 'monospace', fontSize: 13, maxHeight: 140, overflowY: 'auto' }}>
+                <div style={{ background: '#0a0c10', border: '1px solid #262b36', padding: 10, borderRadius: 8, marginTop: 8, color: '#a5c5f5', fontSize: 13, whiteSpace: 'pre-wrap' }}>
                   {codeOutput.output && <pre style={{ margin: 0, color: '#a5f5a5', whiteSpace: 'pre-wrap' }}>{codeOutput.output}</pre>}
                   {codeOutput.error && <pre style={{ margin: 0, color: '#f5a5a5', whiteSpace: 'pre-wrap' }}>{codeOutput.error}</pre>}
                   {!codeOutput.output && !codeOutput.error && <span style={{ color: '#888' }}>(no output)</span>}
@@ -158,14 +165,10 @@ export default function QuestionPracticeModal({ questionId, onClose, onSolved })
             style={{ width: '100%', marginTop: 8 }}
           />
         )}
-
-        {aiResult && (
-          <div className="feedback-box" style={{ marginTop: 12 }}>
-            <strong>AI Score: {aiResult.score}/100</strong>
-            <p>{aiResult.feedback}</p>
-          </div>
-        )}
-
+        <div style={{ marginTop: 12 }}>
+          <strong>AI Score: {aiResult?.score}/100</strong>
+          <p>{aiResult?.feedback}</p>
+        </div>
         <div className="button-row">
           <button onClick={handleSubmit} disabled={submitting}>
             {submitting ? 'Evaluating...' : 'Submit Answer'}

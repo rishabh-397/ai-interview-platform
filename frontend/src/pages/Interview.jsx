@@ -4,6 +4,7 @@ import Editor from '@monaco-editor/react';
 import io from 'socket.io-client';
 import api from '../services/api';
 import WebcamProctor from '../components/WebcamProctor.jsx';
+import StrictProctor from '../components/StrictProctor';
 
 export default function Interview() {
   const [session, setSession] = useState(null);
@@ -34,6 +35,10 @@ export default function Interview() {
   const questionCount = Number(searchParams.get('count')) || 5;
   const companyIdParam = searchParams.get('companyId') || null;
   const persona = searchParams.get('persona') || 'friendly';
+
+  const handleProctorViolation = (type) => {
+    console.warn('Proctor violation:', type);
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem('activeInterview');
@@ -482,6 +487,11 @@ export default function Interview() {
         socketRef={socketRef}
         sessionId={session.id}
         onWarning={setProctorWarning}
+      />
+
+      <StrictProctor
+        enabled={true}
+        onViolation={handleProctorViolation}
       />
     </div>
   );
